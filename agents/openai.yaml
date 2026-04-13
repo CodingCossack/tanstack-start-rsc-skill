@@ -1,0 +1,4 @@
+interface:
+  display_name: "TanStack Start RSC"
+  short_description: "Review, implement, debug, and refactor TanStack Start React Server Components."
+  default_prompt: "Use the tanstack-start-rsc skill. Treat TanStack Start RSC as fetchable Flight payloads, pick the smallest correct primitive, identify cache and refresh ownership, and fix stale API usage before changing code."
