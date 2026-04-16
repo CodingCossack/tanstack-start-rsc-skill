@@ -1,53 +1,64 @@
 # TanStack Start RSC Skill
 
-Portable skill for **TanStack Start React Server Components**.
+TanStack Start React Server Components skill for `renderServerComponent`,
+`createCompositeComponent`, Composite Components, React Flight, TanStack
+Router, TanStack Query, cache ownership, `router.invalidate()`, SSR modes, and
+RSC refresh patterns.
 
-This repo is the **skill folder itself**. That is intentional. It means people can use it however they already work:
+This skill helps implement, review, debug, and refactor TanStack Start RSC
+apps by choosing the right RSC primitive, assigning Router vs Query ownership,
+wiring refresh correctly, designing slot-based Composite Components, and fixing
+stale or outdated API usage.
 
-- install it with `npx skills`
-- symlink or copy it into a local Claude Code or Codex skills directory
-- zip it and upload it to Claude
-- hand the repo or zip to another agent and tell it to install it
+## What this TanStack Start skill actually does
 
-The skill is built for real TanStack Start RSC work, not for reciting docs:
+- chooses between `renderServerComponent`, `createCompositeComponent`, and
+  low-level Flight APIs based on the real composition need
+- clarifies cache ownership across TanStack Router, TanStack Query, and
+  HTTP or server caching
+- maps refresh ownership to the correct mechanism such as
+  `router.invalidate()`, query invalidation, or HTTP revalidation
+- handles Composite Components, client slots, render props, and opaque slot
+  payload rules
+- reviews SSR modes including standard SSR, `ssr: 'data-only'`, and `ssr: false`
+- flags stale APIs, outdated examples, invalid loader assumptions, and RSC cache
+  mistakes such as missing `structuralSharing: false`
+- supports migrations from stale or Next App Router-shaped mental models to
+  current TanStack Start RSC patterns
 
-- primitive choice: `renderServerComponent` vs `createCompositeComponent` vs low-level Flight APIs
-- cache ownership: Router vs Query vs HTTP/server cache
-- refresh wiring: `router.invalidate()` vs Query invalidation vs HTTP revalidation
+## Best use cases
+
+- TanStack Start React Server Components implementation
+- debugging stale RSC data and broken refresh flows
+- choosing Router vs Query ownership for RSC payloads
 - Composite Components and slot design
-- SSR mode selection, loader boundaries, and stale API cleanup
+- reviewing loader boundaries, `loaderDeps`, `staleTime`, and SSR configuration
+- migrating outdated TanStack Start RSC examples to current APIs
 
----
+## Outputs
 
-## The fast answer
+- correct RSC primitive choice
+- cache owner and refresh owner decisions
+- safer server/client boundary design
+- concrete implementation and refactor guidance
+- framework-specific fixes instead of generic React Server Components advice
 
-### Do I need to connect this repo to skills.sh?
+## Core capability areas
 
-No.
+The core value is in the architecture, cache, and debugging guidance behind the
+skill:
 
-If this repo is on GitHub, people can install it directly with `npx skills add <owner>/<repo>`. The Skills CLI accepts GitHub shorthand, full GitHub URLs, direct paths inside repos, and local paths. `skills.sh` is the public discovery directory for the ecosystem, but it is **not required** for installation.
+- `docs/architecture.md` for the TanStack Start RSC mental model
+- `docs/caching-refresh-ssr.md` for cache ownership, refresh paths, and SSR
+  modes
+- `docs/composite-components.md` for Composite Components and slot rules
+- `docs/current-api-notes.md` for stale API cleanup and current naming
+- `docs/debugging-review.md` for debugging and review workflows
+- `examples/` for copy-paste patterns covering the highest-value RSC paths
 
-### Does this repo already work with `npx skills`?
+## Fast install
 
-Yes.
-
-The CLI looks for valid `SKILL.md` files in the repo root as well as common skill directories. This repo keeps `SKILL.md` at the root, so `npx skills add CodingCossack/tanstack-start-rsc-skill` is enough once the repo is published.
-
----
-
-## Pick the install path that matches how you work
-
-Important distinction:
-
-- `global` means global for a specific agent, such as Claude Code or Codex
-- there is no single universal skill directory shared by every harness
-- if you want one command that installs globally across multiple supported agents, use `npx skills` and target those agents explicitly
-
-### 1. I want the easiest install and easiest updates
-
-Use the Skills CLI.
-
-From GitHub:
+The install folder name stays `tanstack-start-rsc`.
 
 ```bash
 npx skills add CodingCossack/tanstack-start-rsc-skill -g -a claude-code -a codex -y
@@ -59,10 +70,10 @@ Useful variants:
 # See what the repo contains before installing
 npx skills add CodingCossack/tanstack-start-rsc-skill --list
 
-# Install from a full GitHub URL instead of owner/repo shorthand
+# Install from a full GitHub URL
 npx skills add https://github.com/CodingCossack/tanstack-start-rsc-skill
 
-# Install from a local folder instead of GitHub
+# Install from a local folder
 npx skills add ./tanstack-start-rsc
 ```
 
@@ -72,47 +83,30 @@ Update later:
 npx skills update tanstack-start-rsc -g
 ```
 
-Why use this path:
+## Manual install
 
-- single command
-- agent-aware placement
-- easy updates later
-- works across Claude Code and Codex
-
-The Skills CLI supports both Claude Code and Codex as install targets and supports project or global installs, symlink or copy, listing available skills, and updating installed skills.
-
-If you want cross-agent global install in one command, use multiple `-a` flags:
-
-```bash
-npx skills add CodingCossack/tanstack-start-rsc-skill -g -a claude-code -a codex -a cursor -a opencode -y
-```
-
-### 2. I want to install it manually into a local project or global skills folder
-
-Use the raw repo folder directly.
-
-#### Codex - global
+### Codex global
 
 ```bash
 mkdir -p "$HOME/.codex/skills"
 ln -s "$(pwd)" "$HOME/.codex/skills/tanstack-start-rsc"
 ```
 
-#### Codex - project-scoped
+### Codex project-scoped
 
 ```bash
 mkdir -p /path/to/project/.agents/skills
 ln -s "$(pwd)" /path/to/project/.agents/skills/tanstack-start-rsc
 ```
 
-#### Claude Code - global
+### Claude Code global
 
 ```bash
 mkdir -p "$HOME/.claude/skills"
 ln -s "$(pwd)" "$HOME/.claude/skills/tanstack-start-rsc"
 ```
 
-#### Claude Code - project-scoped
+### Claude Code project-scoped
 
 ```bash
 mkdir -p /path/to/project/.claude/skills
@@ -131,12 +125,7 @@ mkdir -p "$HOME/.claude/skills/tanstack-start-rsc"
 rsync -a --delete --exclude '.git' --exclude 'dist' ./ "$HOME/.claude/skills/tanstack-start-rsc/"
 ```
 
-Official locations:
-
-- Claude Code personal skills live in `~/.claude/skills/<skill-name>/SKILL.md`; project skills live in `.claude/skills/<skill-name>/SKILL.md`. Claude can invoke a skill directly with `/skill-name` or load it automatically when relevant.
-- The Skills CLI currently maps Codex project installs to `.agents/skills/` and Codex global installs to `~/.codex/skills/`.
-
-### 3. I want a zip I can upload or hand around
+## Zip packaging
 
 Build a clean zip from the repo root:
 
@@ -150,13 +139,10 @@ Output:
 dist/tanstack-start-rsc-skill.zip
 ```
 
-This zip is for humans and agents. It includes the actual skill content and excludes repo noise.
+Claude custom skill upload expects the skill folder inside the ZIP, not loose
+files at the ZIP root.
 
-#### Claude web upload
-
-Claude's custom skills flow accepts a ZIP containing the skill folder. The ZIP should contain the skill folder as its root, not loose files at the root.
-
-#### Manual unzip install
+Manual unzip install:
 
 ```bash
 unzip dist/tanstack-start-rsc-skill.zip -d "$HOME/.claude/skills"
@@ -164,25 +150,13 @@ unzip dist/tanstack-start-rsc-skill.zip -d "$HOME/.claude/skills"
 unzip dist/tanstack-start-rsc-skill.zip -d "$HOME/.codex/skills"
 ```
 
-The only invariant that matters is the final path:
+The final path should end in:
 
 ```text
 $HOME/.claude/skills/tanstack-start-rsc/SKILL.md
 # or
 $HOME/.codex/skills/tanstack-start-rsc/SKILL.md
 ```
-
-### 4. I want Codex or Claude to install it for me
-
-That is valid too.
-
-Minimal prompt:
-
-```text
-Install this TanStack Start RSC skill. Keep the folder name tanstack-start-rsc and make sure the final path ends in SKILL.md. For Codex use $HOME/.codex/skills/tanstack-start-rsc. For Claude Code use $HOME/.claude/skills/tanstack-start-rsc.
-```
-
----
 
 ## Verify it loaded
 
@@ -194,45 +168,13 @@ Direct invocation:
 /tanstack-start-rsc
 ```
 
-Claude also sees the skill description up front and can load the full skill automatically when the task matches.
-
 ### Codex
 
-Codex can load the skill explicitly or automatically depending on the client you use. A good direct prompt is:
+Good direct prompt:
 
 ```text
 Use the tanstack-start-rsc skill. First classify this task as renderServerComponent vs createCompositeComponent vs low-level Flight API. Then identify the real cache owner and refresh owner. Then implement or refactor the smallest correct solution.
 ```
-
----
-
-## What this skill actually helps with
-
-Use it when you are working on TanStack Start code that involves:
-
-- `@tanstack/react-start/rsc`
-- `renderServerComponent`
-- `createCompositeComponent`
-- `<CompositeComponent />`
-- `renderToReadableStream`, `createFromReadableStream`, `createFromFetch`
-- TanStack Query plus RSC caching
-- TanStack Router loaders, `loaderDeps`, `staleTime`, `ssr`
-- stale RSC data, wrong invalidation, missing refresh wiring
-- slot composition, render props, component slots
-- migration away from stale names or outdated examples
-
-It is opinionated about the mistakes that actually waste time:
-
-- treating a loader as server-only
-- putting secrets or DB access into an isomorphic loader
-- using `createCompositeComponent` when `renderServerComponent` would do
-- using `renderServerComponent` when slots are required
-- treating route invalidation and query invalidation as interchangeable
-- caching RSC values in Query without `structuralSharing: false`
-- inspecting or cloning opaque slot content on the server
-- using stale names or stale validation APIs from older examples
-
----
 
 ## Repository layout
 
@@ -259,51 +201,3 @@ It is opinionated about the mistakes that actually waste time:
 └── scripts/
     └── build-zip.sh
 ```
-
-### File guide
-
-- `SKILL.md` - agent entrypoint; fast activation surface, invariants, decision tree, review/debug routing
-- `agents/openai.yaml` - optional Codex metadata and default prompt
-- `docs/` - deeper reference material only when needed
-- `examples/` - small copy-paste patterns for the highest-value implementation paths
-- `scripts/build-zip.sh` - builds a clean share/import zip with the correct top-level folder
-
----
-
-## Updating
-
-Pick the update path that matches the install path:
-
-- installed with `npx skills` -> `npx skills update tanstack-start-rsc` or `npx skills update -g`
-- symlink install -> `git pull`
-- copied install -> re-run your `rsync` command
-- zip install -> rebuild the zip and re-upload or replace the extracted folder
-- checked-in project copy -> update the files in that repo normally
-
----
-
-## Why the repo is shaped like this
-
-This repo keeps the skill **at the root** instead of hiding it in a packaging wrapper.
-
-That gives you one canonical source that works for:
-
-- direct GitHub install via `npx skills add owner/repo`
-- local path install via `npx skills add ./path`
-- manual symlink/copy installs
-- zip upload to Claude
-- raw inspection and editing
-
-The README is for humans. `SKILL.md` is for agents.
-
----
-
-## Relevant docs
-
-- [TanStack Start React Server Components guide](https://tanstack.com/start/latest/docs/framework/react/guide/server-components)
-- [TanStack blog: React Server Components](https://tanstack.com/blog/react-server-components)
-- [Skills CLI / open skills ecosystem](https://github.com/vercel-labs/skills)
-- [skills.sh directory](https://skills.sh)
-- [Claude Code skills docs](https://code.claude.com/docs/en/skills)
-- [Claude custom skills upload docs](https://support.claude.com/en/articles/12512180-use-skills-in-claude)
-- [OpenAI Codex skills docs](https://developers.openai.com/codex/skills)
